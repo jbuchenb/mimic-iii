@@ -43,7 +43,58 @@ where d.ICD9_code in ('99591', '99592')
 ;
 ```
 
-###### Search patients with sepsis or severe sepsis
+###### Create table with patients with sepsis or severe sepsis, admission information and age at the admission
+How to calculate age
+intime from icustays 
+vs
+admittime from admissions
+verify if they are the same
+
+```SQL
+select j.hadm_id, a.admittime, icd9_code, j.subject_id, t.dob,    timestampdiff(YEAR, t.dob, a.admittime) as age_admission, 
+ROUND((cast(a.admittime as date) - cast(t.dob as date))/365.242, 2) as age
+from admissions a
+right join
+(SELECT distinct icd9_code,  hadm_id, subject_id
+FROM mimiciiiv13.DIAGNOSES_ICD
+where ICD9_code in ('99591', '99592')
+) j on a.hadm_id = j.hadm_id
+left join 
+(select subject_id, dob
+from patients 
+where subject_id in
+	(SELECT distinct subject_id
+		FROM mimiciiiv13.DIAGNOSES_ICD
+		where ICD9_code in ('99591', '99592')
+	) 
+) t on a.subject_id = t.subject_id
+
+where timestampdiff(YEAR, t.dob, a.admittime) >= 18
+
+;
+```
+
+vs mimic proposed calculation
+```SQL
+SELECT ie.subject_id, ie.hadm_id, ie.icustay_id,
+    ie.intime, ie.outtime,
+    ROUND((cast(ie.intime as date) - cast(pat.dob as date))/365.242, 2) AS age,
+    CASE
+        WHEN ROUND((cast(ie.intime as date) - cast(pat.dob as date))/365.242, 2) <= 1
+            THEN 'neonate'
+        WHEN ROUND((cast(ie.intime as date) - cast(pat.dob as date))/365.242, 2) <= 14
+            THEN 'middle'
+        -- all ages > 89 in the database were replaced with 300
+        WHEN ROUND((cast(ie.intime as date) - cast(pat.dob as date))/365.242, 2) > 100
+            then '>89'
+        ELSE 'adult'
+        END AS ICUSTAY_AGE_GROUP
+FROM icustays ie
+INNER JOIN patients pat
+ON ie.subject_id = pat.subject_id;
+```
+
+
 
 
 ## References 
