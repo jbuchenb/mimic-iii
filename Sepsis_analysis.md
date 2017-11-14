@@ -108,5 +108,7 @@ ON ie.subject_id = pat.subject_id;
 ## References 
   * Bone RC, Balk RA, Cerra FB, Dellinger RP, Fein AM, Knaus WA, Schein RM, Sibbald WJ. Definitions for sepsis and organ failure and guidelines for the use of innovative therapies in sepsis. The ACCP/SCCM Consensus Conference Committee. American College of Chest Physicians/Society of Critical Care Medicine.Chest. 1992 Jun;101(6):1644-55.
 http://journal.chestnet.org/article/S0012-3692(16)38415-X/fulltext
-  * AHIMA
+  * AHIMA.
   http://library.ahima.org/doc?oid=70222#.WgnxxLA-dTY
+  * The DATE, DATETIME, and TIMESTAMP Types.
+  https://dev.mysql.com/doc/refman/5.7/en/datetime.html
