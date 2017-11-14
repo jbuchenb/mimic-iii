@@ -106,9 +106,9 @@ where timestampdiff(YEAR, t.dob, a.intime) >= 18
 
 # Index creation
 alter table sepsis_patients
-	add index sepsis_patients_idx01 (hadm_id),
-	add index sepsis_patients_idx02 (intime),
-	add index sepsis_patients_idx03 (subject_id)
+	add index sepsis_patients_idx01 (subject_id, hadm_id),
+	add index sepsis_patients_idx02 (intime)
+
 ;
 ```
 
