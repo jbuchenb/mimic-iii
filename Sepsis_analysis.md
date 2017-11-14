@@ -44,11 +44,7 @@ where d.ICD9_code in ('99591', '99592')
 ```
 
 ###### Create table with patients with sepsis or severe sepsis, admission information and age at the admission
-How to calculate age
-intime from icustays 
-vs
-admittime from admissions
-verify if they are the same
+How to calculate age; intime from icustays vs admittime from admissions; verify if they are the same ; patient >89 get calculate age of hundreds (anonymization tech)
 
 ```SQL
 select j.hadm_id, a.admittime, icd9_code, j.subject_id, t.dob,    timestampdiff(YEAR, t.dob, a.admittime) as age_admission, 
