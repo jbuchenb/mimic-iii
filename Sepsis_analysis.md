@@ -51,7 +51,12 @@ How to calculate age, facts:
   * In some cases the `admittime` preceeds `intime` in othe cases not.
   * Patient >89 get calculate age of hundreds (anonymization tech).
 
-**Conclusion:** calculate the age each time a patient is transferred to ICU.
+**Conclusion:** calculate the age each time a patient is transferred to ICU
+
+###### Difference between DATETIME and TIMESTAMP
+`TIMESTAMP` range is between `'1970-01-01 00:00:01' UTC to '2038-01-09 03:14:07' UTC`, not compatible with mimic III date ranges, i.e., `2164-10-23 21:10:15`.
+
+`DATETIME` range is between `1000-01-01 00:00:00' to '9999-12-31 23:59:59`.
 
 ```SQL
 select j.hadm_id, a.admittime, icd9_code, j.subject_id, t.dob,    timestampdiff(YEAR, t.dob, a.admittime) as age_admission, 
