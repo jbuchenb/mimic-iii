@@ -44,7 +44,14 @@ where d.ICD9_code in ('99591', '99592')
 ```
 
 ###### Create table with patients with sepsis or severe sepsis, admission information and age at the admission
-How to calculate age; intime from icustays vs admittime from admissions; verify if they are the same ; patient >89 get calculate age of hundreds (anonymization tech)
+How to calculate age, facts:
+  * MIMIC III tutorial propose to calculate age using the first admission time. Many patients have many ICU admissions ,in some cases separated by years.
+  * `INTIME` from table `icustays` provides the date and time the patient was transferred into the ICU. 
+  * `admittime` from table `admissions` provides the date and time the patient was admitted to the hospital.
+  * In some cases the `admittime` preceeds `intime` in othe cases not.
+  * Patient >89 get calculate age of hundreds (anonymization tech).
+
+**Conclusion:** calculate the age each time a patient is transferred to ICU.
 
 ```SQL
 select j.hadm_id, a.admittime, icd9_code, j.subject_id, t.dob,    timestampdiff(YEAR, t.dob, a.admittime) as age_admission, 
