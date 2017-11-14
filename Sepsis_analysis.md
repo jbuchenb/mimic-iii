@@ -86,30 +86,29 @@ from
 select j.hadm_id, a.intime, a.outtime, icd9_code, j.subject_id, t.dob,    timestampdiff(YEAR, t.dob, a.intime) as age_admission_icu
 from icustays a
 right join
-(SELECT distinct icd9_code,  hadm_id, subject_id
-FROM mimiciiiv13.DIAGNOSES_ICD
-where ICD9_code in ('99591', '99592')
-) j on a.hadm_id = j.hadm_id
+	(SELECT distinct icd9_code,  hadm_id, subject_id
+	FROM mimiciiiv13.DIAGNOSES_ICD
+	where ICD9_code in ('99591', '99592')
+	) j on a.hadm_id = j.hadm_id
 left join 
-(select subject_id, dob
-from patients 
-where subject_id in
-	(SELECT distinct subject_id
-		FROM mimiciiiv13.DIAGNOSES_ICD
-		where ICD9_code in ('99591', '99592')
-	) 
-) t on a.subject_id = t.subject_id
+	(select subject_id, dob
+	from patients 
+	where subject_id in
+		(SELECT distinct subject_id
+			FROM mimiciiiv13.DIAGNOSES_ICD
+			where ICD9_code in ('99591', '99592')
+		) 
+	) t on a.subject_id = t.subject_id
 
 where timestampdiff(YEAR, t.dob, a.intime) >= 18
 ) temp
 ;
 
 # Index creation
-create index sepsis_hadm_id on sepsis_patients(hadm_id)
-;
-create index sepsis_intime on sepsis_patients(intime)
-;
-create index sepsis_subject_id on sepsis_patients(subject_id)
+alter table sepsis_patients
+	add index sepsis_patients_idx01 (hadm_id),
+	add index sepsis_patients_idx02 (intime),
+	add index sepsis_patients_idx03 (subject_id)
 ;
 ```
 
