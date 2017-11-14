@@ -43,7 +43,9 @@ where d.ICD9_code in ('99591', '99592')
 ;
 ```
 
-###### Create table with patients with sepsis or severe sepsis, admission information and age at the admission
+#### Sepsis patients table
+
+##### Considerations
 How to calculate age, facts:
   * MIMIC III tutorial propose to calculate age using the first admission time. Many patients have many ICU admissions ,in some cases separated by years.
   * `INTIME` from table `icustays` provides the date and time the patient was transferred into the ICU. 
@@ -58,10 +60,31 @@ How to calculate age, facts:
 
 `DATETIME` range is between `1000-01-01 00:00:00' to '9999-12-31 23:59:59`.
 
+###### Create table with patients with sepsis or severe sepsis, admission information and age at the admission
 ```SQL
-select j.hadm_id, a.admittime, icd9_code, j.subject_id, t.dob,    timestampdiff(YEAR, t.dob, a.admittime) as age_admission, 
-ROUND((cast(a.admittime as date) - cast(t.dob as date))/365.242, 2) as age
-from admissions a
+# Required to create a table with invalid dates, for example 0
+SET SQL_MODE='ALLOW_INVALID_DATES';
+DROP TABLE IF EXISTS sepsis_patients;
+
+# Used datetime instead of timestamp because the first offers a bigger range.
+create table sepsis_patients (
+	hadm_id int,
+	intime DATETIME(0),
+	outtime DATETIME(0),
+	icd9_code VARCHAR(10),
+	SUBJECT_ID int,
+	dob DATETIME(0),
+	age_admission_icu smallint
+)
+
+# Insert data
+;
+insert into sepsis_patients
+select * 
+from
+(
+select j.hadm_id, a.intime, a.outtime, icd9_code, j.subject_id, t.dob,    timestampdiff(YEAR, t.dob, a.intime) as age_admission_icu
+from icustays a
 right join
 (SELECT distinct icd9_code,  hadm_id, subject_id
 FROM mimiciiiv13.DIAGNOSES_ICD
@@ -77,31 +100,18 @@ where subject_id in
 	) 
 ) t on a.subject_id = t.subject_id
 
-where timestampdiff(YEAR, t.dob, a.admittime) >= 18
+where timestampdiff(YEAR, t.dob, a.intime) >= 18
+) temp
+;
 
+# Index creation
+create index sepsis_hadm_id on sepsis_patients(hadm_id)
+;
+create index sepsis_intime on sepsis_patients(intime)
+;
+create index sepsis_subject_id on sepsis_patients(subject_id)
 ;
 ```
-
-vs mimic proposed calculation
-```SQL
-SELECT ie.subject_id, ie.hadm_id, ie.icustay_id,
-    ie.intime, ie.outtime,
-    ROUND((cast(ie.intime as date) - cast(pat.dob as date))/365.242, 2) AS age,
-    CASE
-        WHEN ROUND((cast(ie.intime as date) - cast(pat.dob as date))/365.242, 2) <= 1
-            THEN 'neonate'
-        WHEN ROUND((cast(ie.intime as date) - cast(pat.dob as date))/365.242, 2) <= 14
-            THEN 'middle'
-        -- all ages > 89 in the database were replaced with 300
-        WHEN ROUND((cast(ie.intime as date) - cast(pat.dob as date))/365.242, 2) > 100
-            then '>89'
-        ELSE 'adult'
-        END AS ICUSTAY_AGE_GROUP
-FROM icustays ie
-INNER JOIN patients pat
-ON ie.subject_id = pat.subject_id;
-```
-
 
 
 
