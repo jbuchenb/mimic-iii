@@ -115,6 +115,20 @@ alter table sepsis_patients
 ;
 ```
 
+#### Drugs to suspect infection
+Only consider IV or IM routes for Anti-infective agents because represents the severity of the suspected infection
+```SQL
+select distinct GSN, drug 
+from PRESCRIPTIONS
+where route like 'IV' 
+or route like 'IM';"
+```
+
+#### Create table with Anti-infective agents
+Merge with redbook and select group 'Anti-infective agents'
+
+
+
 
 
 ## References 
