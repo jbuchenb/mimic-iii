@@ -83,7 +83,10 @@ insert into sepsis_patients
 select * 
 from
 (
-select j.hadm_id, a.intime, a.outtime, icd9_code, j.subject_id, t.dob,    timestampdiff(YEAR, t.dob, a.intime) as age_admission_icu
+select j.hadm_id, a.intime, 
+	a.outtime, icd9_code, 
+	j.subject_id, t.dob, 
+	timestampdiff(YEAR, t.dob, a.intime) as age_admission_icu
 from icustays a
 right join
 	(SELECT distinct icd9_code,  hadm_id, subject_id
